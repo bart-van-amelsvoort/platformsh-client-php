@@ -393,26 +393,36 @@ class Connector implements ConnectorInterface
     public function getClient()
     {
         if (!isset($this->client)) {
-            $stack = HandlerStack::create();
-            $stack->push($this->getOauthMiddleware());
-
-            $config = [
-                'handler' => $stack,
-                'headers' => ['User-Agent' => $this->config['user_agent']],
-                'debug' => $this->config['debug'],
-                'verify' => $this->config['verify'],
-                'proxy' => $this->config['proxy'],
-                'auth' => 'oauth2',
-            ];
-
-            if ($this->config['gzip']) {
-                $config['decode_content'] = true;
-                $config['headers']['Accept-Encoding'] = 'gzip';
-            }
-
-            $this->client = new Client($config);
+            $this->client = new Client($this->getClientConfig());
         }
 
         return $this->client;
+    }
+
+    /**
+     * Get the config to add to Guzzle clients.
+     *
+     * @return array
+     */
+    protected function getClientConfig()
+    {
+        $stack = HandlerStack::create();
+        $stack->push($this->getOauthMiddleware());
+
+        $config = [
+            'handler' => $stack,
+            'headers' => ['User-Agent' => $this->config['user_agent']],
+            'debug' => $this->config['debug'],
+            'verify' => $this->config['verify'],
+            'proxy' => $this->config['proxy'],
+            'auth' => 'oauth2',
+        ];
+
+        if ($this->config['gzip']) {
+            $config['decode_content'] = true;
+            $config['headers']['Accept-Encoding'] = 'gzip';
+        }
+
+        return $config;
     }
 }
